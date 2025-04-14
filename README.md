@@ -1,50 +1,67 @@
-# Welcome to your Expo app 👋
+# Issue repro for Expo SDK 53
+Issue: https://github.com/expo/expo/issues/36147
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Issue: Context Meny in Stack Header on iOS
 
-## Get started
+While experimenting with SDK 53 and testing out the new (experimental) expo-ui `ContextMenu`, I decided to upgrade one of my iOS-only apps. I thought it would be a good opportunity to try replacing a `Zeego` dropdown menu in the `headerLeft` with the expo-ui equivalent.
 
-1. Install dependencies
+However, when used in the stack header, the app completely freezes on a white screen at launch or reload. So far, this issue appears to be isolated to iOS and only occurs when the menu is used in the header - in-screen usage works as expected on both platforms.
 
-   ```bash
-   npm install
-   ```
+<table>
+  <tr>
+   <th></th>
+   <th>
+    In Screen
+   </th>
+   <th>
+    In Stack header
+   </th>
+  <tr>
+    <td>
+      iOS
+    </td>
+    <td>✅</td>
+    <td>❌</td>
+  </tr>
+  <tr>
+    <td>
+      Android
+    </td>
+    <td>✅</td>
+    <td>✅</td>
+  </tr>
+</table>
 
-2. Start the app
+https://github.com/user-attachments/assets/fd4652ab-3d5f-4043-acfb-a7582b1feca4
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+### Steps to repro from example repo
+1. Install the project
+2. Create a development build and run it on your iOS simulator or device — everything should work as expected
+3. In `_layout.tsx`, comment out the default <Stack /> and instead return the following:
+```
+return (
+  <Stack
+    screenOptions={{
+      headerLeft: () => <CustomHeaderLeft />
+    }}
+  />
+);
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+![Image](https://github.com/user-attachments/assets/91c2c927-a763-4f70-bc34-90fec5e3ca66)
+4. Notice how the CustomHeaderLeft renders correctly
+5. Reload the app - it freezes on a completely blank screen
 
-## Learn more
+## Issue: Unexpected order of items on iOS
 
-To learn more about developing your project with Expo, look at the following resources:
+Another issue I noticed is that menu items appear in reverse order on iOS. The expected order is:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```
+Foo
+Bar
+Submenu
+```
 
-## Join the community
+This works correctly on Android, but on iOS the order is flipped.
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+![Image](https://github.com/user-attachments/assets/23024cdb-5bf6-4e81-b971-26b23d5c0564)
